@@ -6,31 +6,49 @@ module Lib
     ( someFunc
     ) where
 
+-- TODO: REMOVE AND ACCEPT THEM PASSED IN.
+import System.Environment
+
 import Data.Aeson
 import Data.Proxy
 import GHC.Generics
 import Network.HTTP.Client (newManager, defaultManagerSettings)
+import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Servant.API
 import Servant.Client
 import Servant.Types.SourceT (foreach)
 
 import qualified Servant.Client.Streaming as S
 
--- import Control.Applicative
--- import Control.Monad
--- import Control.Monad.IO.Class
--- import Control.Monad.Trans.Except
+newtype Account = Account { status :: String }
+  deriving (Show, Generic)
 
--- import Data.Aeson
--- import Data.Monoid
--- import Data.Proxy
--- import Data.Text (Text)
--- import GHC.Generics
--- import Servant.API
--- import Servant.Client
+instance FromJSON Account
 
--- import qualified Data.Text    as T
--- import qualified Data.Text.IO as T
+type Alpaca = "account"
+  :> Header "APCA-API-KEY-ID" String
+  :> Header "APCA-API-SECRET-KEY" String
+  :> Get '[JSON] Account
+
+cira :: Proxy Alpaca
+cira = Proxy
+
+account = client cira
+paperAlpacaBase = BaseUrl Https "paper-api.alpaca.markets" 443 "/v2"
 
 someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+-- someFunc = putStrLn "someFunc"
+someFunc = do
+  -- mgmt  <- newManager defaultManagerSettings
+  mgmt  <- newManager tlsManagerSettings
+  key <- getEnv "ALPACA_KEY"
+  secret <- getEnv "ALPACA_SECRET"
+  res <- runClientM (getAccountStatus key secret) (mkClientEnv mgmt paperAlpacaBase)
+  case res of
+        Left err -> putStrLn $ "Error: " ++ show err
+        Right (acct) -> print acct
+
+getAccountStatus :: String -> String -> ClientM (Account)
+getAccountStatus key secret = do
+  acct <- account (Just key) (Just secret)
+  return (acct)

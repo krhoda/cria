@@ -19,6 +19,13 @@ packages:
   original:
     hackage: http-client-0.6.4
 - completed:
+    hackage: http-client-tls-0.3.5.3@sha256:c97c3d88e6318a3056e42e2cd0913d5c4bff381f83341bb6ff06865fd12c8b52,2066
+    pantry-tree:
+      size: 435
+      sha256: b19e23dc469491661e9d1a40a9ba65ce745d4fd0143d4f9f7be824c8a5e2cee8
+  original:
+    hackage: http-client-tls-0.3.5.3
+- completed:
     hackage: aeson-1.4.4.0@sha256:a6f5eddcff9526c786a1b77bdfade54b42f67c066b379bbc4b55ffb291e6c7d6,7251
     pantry-tree:
       size: 40193
