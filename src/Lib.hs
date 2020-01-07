@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Lib
@@ -7,32 +5,16 @@ module Lib
     ) where
 
 import Account
+import Cria
+import Alparseable
 
 -- TODO: REMOVE AND ACCEPT THEM PASSED IN.
 import System.Environment
 
-import Data.Aeson
-import Data.Proxy
+import Servant.Client
 
 import Network.HTTP.Client (newManager, defaultManagerSettings)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
-
-import Servant.API
-import Servant.Client
-import Servant.Types.SourceT (foreach)
-
-import qualified Servant.Client.Streaming as S
-
-type Alpaca = "account"
-  :> Header "APCA-API-KEY-ID" String
-  :> Header "APCA-API-SECRET-KEY" String
-  :> Get '[JSON] Account
-
-cira :: Proxy Alpaca
-cira = Proxy
-
-account = client cira
-paperAlpacaBase = BaseUrl Https "paper-api.alpaca.markets" 443 "/v2"
 
 someFunc :: IO ()
 someFunc = do
@@ -43,8 +25,9 @@ someFunc = do
   case res of
         Left err -> putStrLn $ "Error: " ++ show err
         Right acct -> do
-          print (parseCash acct)
-          print (parseEquity acct)
+          print (alparse (status acct))
+          print (alparse (buying_power acct))
+          print (alparse (cash acct))
 
 getAccountStatus :: String -> String -> ClientM Account
 getAccountStatus key secret = do
