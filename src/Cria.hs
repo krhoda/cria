@@ -18,8 +18,13 @@ data CriaClient = CriaClient {
   live :: Bool
   } deriving (Show, Eq)
 
-newCriaClient :: (String, String, Bool) -> CriaClient
-newCriaClient (key, secret, live) = CriaClient {proxy = Proxy, key = key, secret = secret, live = live}
+configCria :: (String, String, Bool) -> CriaClient
+configCria (key, secret, live) = CriaClient {
+  proxy = Proxy,
+  key = key,
+  secret = secret,
+  live = live
+  }
 
 signReq :: CriaClient -> (Maybe String -> Maybe String -> a) -> a
 signReq x y = y (Just (key x)) (Just (secret x))
@@ -32,6 +37,9 @@ runReq x y = do
 
 signAndRun :: CriaClient -> (Maybe String -> Maybe String -> ClientM a) -> IO (Either ClientError a)
 signAndRun x y = runReq x (signReq x y)
+
+routes :: CriaClient -> Client ClientM Alpaca
+routes x = client (proxy x)
 
 -- Get Routes:
 account = client apiProxy
