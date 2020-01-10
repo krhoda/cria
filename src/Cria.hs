@@ -20,11 +20,11 @@ data CriaClient = CriaClient {
 
 configCria :: (String, String, Bool) -> CriaClient
 configCria (key, secret, live) = CriaClient {
-  proxy = Proxy,
-  key = key,
-  secret = secret,
-  live = live
-  }
+                                    proxy = Proxy,
+                                    key = key,
+                                    secret = secret,
+                                    live = live
+                                    }
 
 signReq :: CriaClient -> (Maybe String -> Maybe String -> a) -> a
 signReq x y = y (Just (key x)) (Just (secret x))

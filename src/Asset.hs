@@ -1,11 +1,12 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators       #-}
-{-# LANGUAGE DeriveGeneric       #-}
-
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Asset where
 
+import Data.Aeson
+import Data.Aeson.TH (deriveJSON, defaultOptions, Options(fieldLabelModifier))
 import Data.Text (Text)
-import qualified GHC.Generics
+
+import GHC.Generics (Generic)
 
 data Asset = Asset {
     marginable :: Bool,
@@ -15,6 +16,13 @@ data Asset = Asset {
     symbol :: Text,
     id :: Text,
     easy_to_borrow :: Bool,
-    -- class :: Text, TODO: FIGURE OUT HOW TO HANDLE THIS!
+    asset_class :: Text, -- TODO: Write custom parser.
     tradable :: Bool
-  } deriving (Show,Eq,GHC.Generics.Generic)
+} deriving (Show,Eq,GHC.Generics.Generic)
+
+$(deriveJSON defaultOptions {fieldLabelModifier = \x ->
+                                if x == "asset_class"
+                                then "class"
+                                else x} ''Asset)
+
+-- instance FromJSON Asset

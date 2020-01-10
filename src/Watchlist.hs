@@ -1,20 +1,22 @@
+{-# LANGUAGE DeriveGeneric #-}
 
-{-# LANGUAGE TemplateHaskell     #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators       #-}
-{-# LANGUAGE DeriveGeneric       #-}
 module Watchlist where
-
-import Data.Text (Text)
-import qualified GHC.Generics
 
 import Asset
 
-data Watchlist = TopLevel {
-    name :: Text,
-    updated_at :: Text,
-    created_at :: Text,
-    id :: Text,
-    account_id :: Text,
-    assets :: [Asset]
-  } deriving (Show,Eq,GHC.Generics.Generic)
+import Data.Aeson
+import Data.Text (Text)
+
+import GHC.Generics (Generic)
+
+data Watchlist = Watchlist {
+       account_id :: Text,
+       assets :: Maybe [Asset],
+       created_at :: Text,
+       id :: Text,
+       name :: Text,
+       updated_at :: Text
+    } deriving (Show, Eq, Generic)
+
+instance FromJSON Watchlist where
+      parseJSON = genericParseJSON defaultOptions { omitNothingFields  = True }

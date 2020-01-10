@@ -1,18 +1,16 @@
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Account
-   where
+module Account where
 
 import Data.Aeson
 import Data.Text (Text)
 
+import GHC.Generics (Generic)
+
 import Alparseable
 
-import GHC.Generics
-
 data Account = Account {
-    id :: Text,
+    id :: Text, -- TODO: Create Custom Parser.
     account_number :: Alparseable,
     status :: Text,
     currency :: Text,
