@@ -38,7 +38,7 @@ runReq x y = do
 signAndRun :: CriaClient -> (Maybe String -> Maybe String -> ClientM a) -> IO (Either ClientError a)
 signAndRun x y = runReq x (signReq x y)
 
-routes :: CriaClient -> Client ClientM Alpaca
+-- routes :: CriaClient -> Client ClientM Alpaca
 routes x = client (proxy x)
 
 -- Get Routes:

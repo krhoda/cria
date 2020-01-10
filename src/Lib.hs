@@ -7,9 +7,13 @@ module Lib
     ( someFunc
     ) where
 
-import Account
-import Cria
 import Alparseable
+
+import Account
+import Cria as Cria
+import Watchlist as W
+
+import Data.Text (unpack)
 
 import Servant.API
 
@@ -20,8 +24,8 @@ someFunc :: IO ()
 someFunc = do
   key <- getEnv "ALPACA_KEY"
   secret <- getEnv "ALPACA_SECRET"
-  cli <- return (configCria (key, secret, False))
-  account :<|> getWatchLists :<|> getWatchList <- return (routes cli)
+  cli <- return (Cria.configCria (key, secret, False))
+  account :<|> getWatchLists :<|> getWatchList <- return (Cria.routes cli)
 
   -- account <- return (routes cli)
 
@@ -38,5 +42,14 @@ someFunc = do
   wRes <- signAndRun cli getWatchLists
   case wRes of
         Left err -> putStrLn $ "Error: " ++ show err
-        Right acct -> do
-          print wRes
+        Right wl -> do
+          print wl
+          x <- return (W.id $ head wl)
+          lRes <- runReq cli (signReq cli getWatchList (unpack x))
+          case lRes of
+            Left err -> putStrLn $ "Error: " ++ show err
+            Right wl' -> print wl'
+
+          -- case x of
+          --   Nothing -> putStrLn "ID was nothing"
+          --   Just(x') -> do
