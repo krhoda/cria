@@ -16,7 +16,7 @@ data Asset = Asset {
     symbol :: Text,
     id :: Text,
     easy_to_borrow :: Bool,
-    asset_class :: Text, -- TODO: Write custom parser.
+    asset_class :: Text,
     tradable :: Bool
 } deriving (Show,Eq,GHC.Generics.Generic)
 
