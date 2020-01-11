@@ -9,9 +9,10 @@ module Lib
 
 import Alparseable
 
-import Account
+import Account as Acct
 import Cria as Cria
-import Watchlist as W
+
+import Watchlist as Wl
 
 import Data.Text (unpack)
 
@@ -33,7 +34,7 @@ someFunc = do
   case res of
         Left err -> putStrLn $ "Error: " ++ show err
         Right acct -> do
-          print (alparse (status acct)) -- Will Print Nothing.
+          print (alparse (Acct.status acct)) -- Will Print Nothing.
           print (alparse (buying_power acct))
           print (alparse (cash acct))
 
@@ -44,7 +45,7 @@ someFunc = do
         Left err -> putStrLn $ "Error: " ++ show err
         Right wl -> do
           print wl
-          x <- return (W.id $ head wl)
+          x <- return (Wl.watchlist_id $ head wl)
           lRes <- runReq cli (signReq cli getWatchList (unpack x))
           case lRes of
             Left err -> putStrLn $ "Error: " ++ show err

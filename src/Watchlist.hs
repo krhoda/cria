@@ -1,22 +1,28 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Watchlist where
 
 import Asset
 
 import Data.Aeson
+import Data.Aeson.TH (deriveJSON, defaultOptions, Options (fieldLabelModifier))
+
 import Data.Text (Text)
 
 import GHC.Generics (Generic)
 
 data Watchlist = Watchlist {
-       account_id :: Text,
-       assets :: Maybe [Asset],
-       created_at :: Text,
-       id :: Text,
-       name :: Text,
-       updated_at :: Text
+    account_id :: Text,
+    assets :: Maybe [Asset],
+    created_at :: Text,
+    watchlist_id :: Text,
+    name :: Text,
+    updated_at :: Text
     } deriving (Show, Eq, Generic)
 
-instance FromJSON Watchlist where
-      parseJSON = genericParseJSON defaultOptions { omitNothingFields  = True }
+$(deriveJSON defaultOptions {fieldLabelModifier = \x ->
+                                case x of
+                                    "watchlist_id" -> "id"
+                                    _ -> x,
+                                    omitNothingFields = True} ''Watchlist)
