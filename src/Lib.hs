@@ -8,18 +8,13 @@ module Lib
     ) where
 
 import Alparseable
-
 import Account as Acct
 import Cria as Cria
-
 import Watchlist as Wl
 
 import Data.Text (unpack)
 
-import Servant.API
-
 import System.Environment
-import Servant.Client
 
 someFunc :: IO ()
 someFunc = do
@@ -27,16 +22,7 @@ someFunc = do
   secret <- getEnv "ALPACA_SECRET"
   cli <- return (Cria.configCria (key, secret, False))
 
-  -- account :<|>
-
-  (wlSlug, getWatchLists :<|>
-    getWatchList :<|>
-    updateWatchList :<|>
-    addSymbolWatchList :<|>
-    deleteSymbolWatchList) <- return watchlistRoutes
-
-  (acctSlug, accountReq) <- return accountRoutes
-  res <- signAndRun cli acctSlug accountReq
+  res <- signAndRun cli accountReq
   case res of
         Left err -> putStrLn $ "Error: " ++ show err
         Right acct -> do
@@ -44,14 +30,13 @@ someFunc = do
           print (alparse (buying_power acct))
           print (alparse (cash acct))
 
-
-  wRes <- signAndRun cli wlSlug getWatchLists
+  wRes <- signAndRun cli getWatchLists
   case wRes of
         Left err -> putStrLn $ "Error: " ++ show err
         Right wl -> do
           print wl
           x <- return (Wl.watchlist_id $ head wl)
-          lRes <- runReq cli wlSlug (signReq cli getWatchList (unpack x))
+          lRes <- runReq cli (signReq cli getWatchList (unpack x))
           case lRes of
             Left err -> putStrLn $ "Error: " ++ show err
             Right wl' -> print wl'

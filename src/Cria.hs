@@ -1,34 +1,53 @@
+{-# LANGUAGE TypeOperators #-}
+
 module Cria where
 
 import Alpaca
+
 import Data.Text (Text, unpack)
 import Data.Proxy
 
 import Network.HTTP.Client (newManager, defaultManagerSettings)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
+
+import Servant.API
 import Servant.Client
 
-paperAlpacaBase :: String -> BaseUrl
-paperAlpacaBase x = BaseUrl Https "paper-api.alpaca.markets" 443 ("/v2/" ++ x)
+-- API Base Choices.
+paperAlpacaBase = BaseUrl Https "paper-api.alpaca.markets" 443 "/v2"
+trueAlpacaBase = BaseUrl Https "api.alpaca.markets" 443 "/v2"
 
-trueAlpacaBase :: String -> BaseUrl
-trueAlpacaBase x = BaseUrl Https "api.alpaca.markets" 443 ("/v2/" ++ x)
 
-data CriaClient = CriaClient {
-  key :: String,
-  secret :: String,
-  live :: Bool
-  } deriving (Show, Eq)
-
+-- Proxy APIs exposed for custom usage. Consider not exposing?
 accountProxy :: Proxy AlpacaAccount
 accountProxy = Proxy
 
 watchlistProxy :: Proxy AlpacaWatchlist
 watchlistProxy = Proxy
 
-accountRoutes = ("account", client accountProxy)
-watchlistRoutes = ("watchlists", client watchlistProxy)
+-- Routes for public consumption.
+accountRoutes = client accountProxy
+watchlistRoutes = client watchlistProxy
 
+
+-- Pre-pattern-matched Requests.
+accountReq = accountRoutes
+
+getWatchLists :<|>
+    getWatchList :<|>
+    updateWatchList :<|>
+    addSymbolWatchList :<|>
+    deleteSymbolWatchList = watchlistRoutes
+
+
+-- Reduces boilerplate by applying configuration to requests as needed.
+data CriaClient = CriaClient {
+  key :: String,
+  secret :: String,
+  live :: Bool
+  } deriving (Show, Eq)
+
+-- CriaClient Creation / Usage.
 configCria :: (String, String, Bool) -> CriaClient
 configCria (key, secret, live) = CriaClient {
                                     key = key,
@@ -36,21 +55,25 @@ configCria (key, secret, live) = CriaClient {
                                     live = live
                                     }
 
+-- Apply credentials to request -- always required.
 signReq :: CriaClient -> (Maybe String -> Maybe String -> a) -> a
 signReq x y = y (Just (key x)) (Just (secret x))
 
-runReq :: CriaClient -> String -> ClientM a -> IO (Either ClientError a)
-runReq cli slug req = do
-  env <- criaEnv slug (live cli)
+-- Run satisfied request.
+runReq :: CriaClient -> ClientM a -> IO (Either ClientError a)
+runReq cli req = do
+  env <- criaEnv (live cli)
   res <- runClientM req env
   return res
 
-signAndRun :: CriaClient -> String -> (Maybe String -> Maybe String -> ClientM a) -> IO (Either ClientError a)
-signAndRun x y z = runReq x y (signReq x z)
+-- Sign and Run is a helper for requests without any other params.
+signAndRun :: CriaClient -> (Maybe String -> Maybe String -> ClientM a) -> IO (Either ClientError a)
+signAndRun x y = runReq x (signReq x y)
 
-criaEnv :: String -> Bool -> IO ClientEnv
-criaEnv x y = do
+-- Used to run requests with correct base.
+criaEnv :: Bool -> IO ClientEnv
+criaEnv x = do
   mgmt <-newManager tlsManagerSettings
-  if y
-      then return (mkClientEnv mgmt (trueAlpacaBase x))
-      else return (mkClientEnv mgmt (paperAlpacaBase x))
+  if x
+      then return (mkClientEnv mgmt trueAlpacaBase)
+      else return (mkClientEnv mgmt paperAlpacaBase)
