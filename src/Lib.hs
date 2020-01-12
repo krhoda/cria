@@ -28,15 +28,15 @@ someFunc = do
   cli <- return (Cria.configCria (key, secret, False))
 
   -- account :<|>
-  --   getWatchLists :<|>
-  --   getWatchList :<|>
-  --   updateWatchList :<|>
-  --   addSymbolWatchList :<|>
-  --   deleteSymbolWatchList <- return (Cria.routes cli)
 
-  accountRoute <- return (account cli)
-  accountReq <- return (routes cli)
-  res <- signAndRun cli accountRoute accountReq
+  (wlSlug, getWatchLists :<|>
+    getWatchList :<|>
+    updateWatchList :<|>
+    addSymbolWatchList :<|>
+    deleteSymbolWatchList) <- return watchlistRoutes
+
+  (acctSlug, accountReq) <- return accountRoutes
+  res <- signAndRun cli acctSlug accountReq
   case res of
         Left err -> putStrLn $ "Error: " ++ show err
         Right acct -> do
@@ -45,17 +45,17 @@ someFunc = do
           print (alparse (cash acct))
 
 
-  -- wRes <- signAndRun cli getWatchLists
-  -- case wRes of
-  --       Left err -> putStrLn $ "Error: " ++ show err
-  --       Right wl -> do
-  --         print wl
-  --         x <- return (Wl.watchlist_id $ head wl)
-  --         lRes <- runReq cli (signReq cli getWatchList (unpack x))
-  --         case lRes of
-  --           Left err -> putStrLn $ "Error: " ++ show err
-  --           Right wl' -> print wl'
+  wRes <- signAndRun cli wlSlug getWatchLists
+  case wRes of
+        Left err -> putStrLn $ "Error: " ++ show err
+        Right wl -> do
+          print wl
+          x <- return (Wl.watchlist_id $ head wl)
+          lRes <- runReq cli wlSlug (signReq cli getWatchList (unpack x))
+          case lRes of
+            Left err -> putStrLn $ "Error: " ++ show err
+            Right wl' -> print wl'
 
           -- case x of
-          --   Nothing -> putStrLn "ID was nothing"
-          --   Just(x') -> do
+            -- Nothing -> putStrLn "ID was nothing"
+            -- Just(x') -> do
