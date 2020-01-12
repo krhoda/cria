@@ -1,8 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
-
+{-# LANGUAGE TemplateHaskell #-}
 module Account where
 
 import Data.Aeson
+import Data.Aeson.TH (deriveJSON, defaultOptions, Options (fieldLabelModifier))
+
 import Data.Text (Text)
 
 import GHC.Generics (Generic)
@@ -10,7 +12,7 @@ import GHC.Generics (Generic)
 import Alparseable
 
 data Account = Account {
-    id :: Text, -- TODO: Create Custom Parser.
+    account_id :: Text,
     account_number :: Alparseable,
     status :: Text,
     currency :: Text,
@@ -38,4 +40,7 @@ data Account = Account {
     regt_buying_power :: Alparseable -- Number. Float
     } deriving (Show, Eq, Generic)
 
-instance FromJSON Account
+$(deriveJSON defaultOptions {fieldLabelModifier = \x ->
+                                case x of
+                                "account_id" -> "id"
+                                _ -> x} ''Account)

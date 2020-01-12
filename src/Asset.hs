@@ -25,22 +25,3 @@ $(deriveJSON defaultOptions {fieldLabelModifier = \x ->
                                     "asset_class" -> "class"
                                     "asset_id" -> "id"
                                     _ -> x} ''Asset)
-
-
--- data Asset = Asset {
---     marginable :: Bool,
---     status :: Text,
---     shortable :: Bool,
---     exchange :: Text,
---     symbol :: Text,
---     id :: Text,
---     easy_to_borrow :: Bool,
---     asset_class :: Text,
---     tradable :: Bool
--- } deriving (Show,Eq,GHC.Generics.Generic)
--- $(deriveJSON defaultOptions {fieldLabelModifier = \x ->
---                                 if x == "asset_class"
---                                 then "class"
---                                 else x} ''Asset)
-
--- instance FromJSON Asset

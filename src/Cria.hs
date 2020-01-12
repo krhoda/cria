@@ -8,11 +8,30 @@ import Network.HTTP.Client (newManager, defaultManagerSettings)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Servant.Client
 
-paperAlpacaBase = BaseUrl Https "paper-api.alpaca.markets" 443 "/v2"
-trueAlpacaBase = BaseUrl Https "api.alpaca.markets" 443 "/v2"
+paperAlpacaBase :: String -> BaseUrl
+paperAlpacaBase x = BaseUrl Https "paper-api.alpaca.markets" 443 ("/v2/" ++ x)
+
+trueAlpacaBase :: String -> BaseUrl
+trueAlpacaBase x = BaseUrl Https "api.alpaca.markets" 443 ("/v2/" ++ x)
+
+data AlpacaApi = AlpacaAccount | AlpacaWatchlist
+  deriving (Show, Eq)
+
+slug :: AlpacaApi -> String
+slug AlpacaAccount = "account"
+slug AlpacaWatchlist = "wishlist"
+
+-- routes ::
+routes :: CriaClient -> (CriaClient -> Proxy AlpacaApi) -> Client ClientM AlpacaApi
+routes x y = client (y x)
+
+
+-- routes :: AlpacaWatchlist -> Client ClientM a
+-- routes AlpacaWatchlist = client Proxy AlpacaWatchlist
 
 data CriaClient = CriaClient {
-  proxy :: Proxy Alpaca,
+  account :: Proxy AlpacaAccount,
+  watchlist :: Proxy AlpacaWatchlist,
   key :: String,
   secret :: String,
   live :: Bool
@@ -20,7 +39,8 @@ data CriaClient = CriaClient {
 
 configCria :: (String, String, Bool) -> CriaClient
 configCria (key, secret, live) = CriaClient {
-                                    proxy = Proxy,
+                                    account = Proxy,
+                                    watchlist = Proxy,
                                     key = key,
                                     secret = secret,
                                     live = live
@@ -29,27 +49,18 @@ configCria (key, secret, live) = CriaClient {
 signReq :: CriaClient -> (Maybe String -> Maybe String -> a) -> a
 signReq x y = y (Just (key x)) (Just (secret x))
 
-runReq :: CriaClient -> ClientM a -> IO (Either ClientError a)
-runReq x y = do
-  env <- criaEnv (live x)
-  res <- runClientM y env
+runReq :: CriaClient -> Proxy AlpacaApi -> ClientM a -> IO (Either ClientError a)
+runReq cli route req = do
+  env <- criaEnv (fmap slug route) (live cli)
+  res <- runClientM req env
   return res
 
-signAndRun :: CriaClient -> (Maybe String -> Maybe String -> ClientM a) -> IO (Either ClientError a)
-signAndRun x y = runReq x (signReq x y)
+signAndRun :: CriaClient -> Proxy AlpacaApi -> (Maybe String -> Maybe String -> ClientM a) -> IO (Either ClientError a)
+signAndRun x y z = runReq x y (signReq x z)
 
--- routes :: CriaClient -> Client ClientM Alpaca
-routes x = client (proxy x)
-
--- Get Routes:
-account = client apiProxy
-
-apiProxy :: Proxy Alpaca
-apiProxy = Proxy
-
-criaEnv :: Bool -> IO ClientEnv
-criaEnv x = do
+criaEnv :: Proxy String -> Bool -> IO ClientEnv
+criaEnv x y = do
   mgmt <-newManager tlsManagerSettings
-  if x
-      then return (mkClientEnv mgmt trueAlpacaBase)
-      else return (mkClientEnv mgmt paperAlpacaBase)
+  if y
+      then return (mkClientEnv mgmt (trueAlpacaBase x))
+      else return (mkClientEnv mgmt (paperAlpacaBase x))
