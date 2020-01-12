@@ -55,7 +55,3 @@ someFunc = do
           case lRes of
             Left err -> putStrLn $ "Error: " ++ show err
             Right wl' -> print wl'
-
-          -- case x of
-            -- Nothing -> putStrLn "ID was nothing"
-            -- Just(x') -> do

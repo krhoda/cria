@@ -14,7 +14,6 @@ paperAlpacaBase x = BaseUrl Https "paper-api.alpaca.markets" 443 ("/v2/" ++ x)
 trueAlpacaBase :: String -> BaseUrl
 trueAlpacaBase x = BaseUrl Https "api.alpaca.markets" 443 ("/v2/" ++ x)
 
-
 data CriaClient = CriaClient {
   key :: String,
   secret :: String,
