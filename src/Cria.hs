@@ -31,7 +31,7 @@ watchlistRoutes = client watchlistProxy
 
 
 -- Pre-pattern-matched Requests.
-accountReq = accountRoutes
+getAccount = accountRoutes
 
 getWatchLists :<|>
     getWatchList :<|>
