@@ -17,7 +17,6 @@ import Servant.Client
 paperAlpacaBase = BaseUrl Https "paper-api.alpaca.markets" 443 "/v2"
 trueAlpacaBase = BaseUrl Https "api.alpaca.markets" 443 "/v2"
 
-
 -- Proxy APIs exposed for custom usage. Consider not exposing?
 accountProxy :: Proxy AlpacaAccount
 accountProxy = Proxy
@@ -29,22 +28,20 @@ watchlistProxy = Proxy
 accountRoutes = client accountProxy
 watchlistRoutes = client watchlistProxy
 
-
 -- Pre-pattern-matched Requests.
 getAccount = accountRoutes
 
 getWatchLists :<|>
-    getWatchList :<|>
-    updateWatchList :<|>
-    addSymbolWatchList :<|>
-    deleteSymbolWatchList = watchlistRoutes
-
+     getWatchList :<|>
+     updateWatchList :<|>
+     addSymbolWatchList :<|>
+     deleteSymbolWatchList = watchlistRoutes
 
 -- Reduces boilerplate by applying configuration to requests as needed.
 data CriaClient = CriaClient {
-  key :: String,
-  secret :: String,
-  live :: Bool
+  key :: String
+  ,secret :: String
+  ,live :: Bool
   } deriving (Show, Eq)
 
 -- CriaClient Creation / Usage.
