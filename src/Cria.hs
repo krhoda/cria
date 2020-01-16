@@ -10,12 +10,16 @@ import Data.Proxy
 import Network.HTTP.Client (newManager, defaultManagerSettings)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 
+import GHC.Generics (Generic)
+
 import Servant.API
 import Servant.Client
 
 -- API Base Choices.
 paperAlpacaBase = BaseUrl Https "paper-api.alpaca.markets" 443 "/v2"
 trueAlpacaBase = BaseUrl Https "api.alpaca.markets" 443 "/v2"
+
+type CriaError = ClientError
 
 -- Proxy APIs exposed for custom usage. Consider not exposing?
 accountProxy :: Proxy AlpacaAccount
@@ -31,11 +35,12 @@ watchlistRoutes = client watchlistProxy
 -- Pre-pattern-matched Requests.
 getAccount = accountRoutes
 
-getWatchLists :<|>
-     getWatchList :<|>
-     updateWatchList :<|>
-     addSymbolWatchList :<|>
-     deleteSymbolWatchList = watchlistRoutes
+getWatchlists :<|>
+     getWatchlist :<|>
+     createWatchlist :<|>
+     updateWatchlist :<|>
+     addSymbolWatchlist :<|>
+     deleteSymbolWatchlist = watchlistRoutes
 
 -- Reduces boilerplate by applying configuration to requests as needed.
 data CriaClient = CriaClient {

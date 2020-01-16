@@ -6,7 +6,9 @@ module Lib
 
 import Alparseable
 import Account as Acct
+import Asset as Ast
 import Cria
+import RequestBodies as Req
 import Watchlist as Wl
 
 import Data.Text (Text, unpack)
@@ -22,50 +24,75 @@ testGetAccount cli step = do
   nextStep <- testPrefix step "Testing Get Account"
   res <- signAndRun cli getAccount
   case res of
-        Left err -> do
-          putStrLn $ "Error: " ++ show err
-          return nextStep
+    Left err -> do
+      putStrLn $ "Error: " ++ show err
+      return nextStep
 
-        Right acct -> do
-          print acct
-          print (alparse (Acct.status acct)) -- Will Print Nothing.
-          print (alparse (buying_power acct))
-          print (alparse (cash acct))
-          return nextStep
+    Right acct -> do
+      print acct
+      print (alparse (Acct.status acct)) -- Will Print Nothing.
+      print (alparse (buying_power acct))
+      print (alparse (cash acct))
+      return nextStep
 
 testWatchlistRoutes :: CriaClient -> Int -> IO Int
 testWatchlistRoutes cli step = do
   (nextStep, watchlistID) <- testGetWatchlists cli step
-  case watchlistID  of
+  case watchlistID of
     Nothing -> do
       putStrLn "No ID returned stopping Watchlist tests..."
+        -- TODO: PUT CREATE HERE:
       return nextStep
     Just wlID -> do
-      lRes <- runReq cli (signReq cli getWatchList (unpack wlID))
+      lRes <- runReq cli (signReq cli getWatchlist (unpack wlID))
+      anotherStep <- testPrefix step "Testing Get Watchlist... About to toggle google"
+      testToggleWatchlistGoogle cli lRes
+      finalStep <-  testPrefix step "Toggled Google"
 
-      handleSimpleRes lRes (\x -> print x)
+      return finalStep
 
-      -- POWT:
-      -- followingGoogle <- isFollowingGoogle lRes
-      -- finalStep <- toggleFollowGoogle cli True
-      -- finalStep <- toggleFollowGoogle cli True
+testToggleWatchlistGoogle :: CriaClient -> Either CriaError Watchlist -> IO ()
+testToggleWatchlistGoogle _ (Left x) = print $ "Error: " ++ show x
+testToggleWatchlistGoogle cli (Right wl) = do
+  toggleWatchingGoogle cli (unpack (watchlist_id wl)) (isWatchingGoogle (assets wl))
 
-      return nextStep
+        -- finalStep <- toggleWatchingGoogle cli nextStep (isWatchingGoogle asts)
+        -- return finalStep
+
+isWatchingGoogle :: Maybe [Asset] -> Bool
+isWatchingGoogle Nothing = False
+isWatchingGoogle (Just []) = False
+isWatchingGoogle (Just (x : xs)) = case Ast.symbol x of
+  "GOOG"  -> True
+  _ -> isWatchingGoogle (Just xs)
+
+googleReq :: WatchlistSymbolPost
+googleReq = WatchlistSymbolPost "GOOG"
+
+testWL :: WatchlistPost
+testWL = WatchlistPost "flowers" ["FLWS"]
+
+toggleWatchingGoogle :: CriaClient -> String -> Bool -> IO ()
+toggleWatchingGoogle cli wlID True = do
+  res <- runReq cli $ signReq cli deleteSymbolWatchlist wlID "GOOG"
+  handleSimpleRes res print
+
+toggleWatchingGoogle cli wlID False = do
+  res <- runReq cli $ signReq cli addSymbolWatchlist wlID googleReq
+  handleSimpleRes res print
 
 testGetWatchlists :: CriaClient -> Int -> IO (Int, Maybe Text)
 testGetWatchlists cli step = do
-  wRes <- signAndRun cli getWatchLists
+  wRes <- signAndRun cli getWatchlists
   nextStep <- testPrefix step "Testing List all Watchlists"
   case wRes of
-        Left err -> do
-          putStrLn $ "Error: " ++ show err
-          return (nextStep, Nothing)
+    Left err -> do
+      putStrLn $ "Error: " ++ show err
+      return (nextStep, Nothing)
 
-        Right wl -> do
-          print wl
-          return (nextStep, Just (Wl.watchlist_id $ head wl))
-
--- toggleFollowGoogle :: CriaClient -> Bool -> Int -> IO (Int)
+    Right wl -> do
+      print wl
+      return (nextStep, Just (Wl.watchlist_id $ head wl))
 
 handleSimpleRes :: (Show a) => Either a b -> (b -> IO ()) -> IO ()
 handleSimpleRes x f = do
@@ -88,5 +115,5 @@ runAPITest :: String -> String -> IO ()
 runAPITest key secret = do
   cli <- return (configCria (key, secret, useLive))
   accountStep <- testGetAccount cli firstStep
-  watchListStep <- testWatchlistRoutes cli accountStep
+  watchlistStep <- testWatchlistRoutes cli accountStep
   print "DONE!"

@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Alpaca where
 
@@ -13,20 +12,7 @@ import Servant.API
 
 import Account
 import Watchlist
-
-data WatchlistPost = WatchlistPost {
-  name :: Text,
-  symbols :: [Text]
-  } deriving (Show, Eq, Generic)
-instance FromJSON WatchlistPost
-instance ToJSON WatchlistPost
-
-newtype WatchlistSymbolPost = WatchlistSymbolPost {
-  symbol :: Text
-  } deriving (Show, Eq, Generic)
-
-instance FromJSON WatchlistSymbolPost
-instance ToJSON WatchlistSymbolPost
+import RequestBodies
 
 type AlpacaAccount =
   -- View Account by Key/Secret
@@ -61,7 +47,7 @@ type AlpacaWatchlist =
   :> Header "APCA-API-KEY-ID" String
   :> Header "APCA-API-SECRET-KEY" String
   :> Capture "id" String
-  :> ReqBody '[JSON] [WatchlistPost]
+  :> ReqBody '[JSON] WatchlistPost
   :> Put '[JSON] Watchlist
 
   -- Add a symbol to watchlist
@@ -69,7 +55,7 @@ type AlpacaWatchlist =
   :> Header "APCA-API-KEY-ID" String
   :> Header "APCA-API-SECRET-KEY" String
   :> Capture "id" String
-  :> ReqBody '[JSON] [WatchlistSymbolPost]
+  :> ReqBody '[JSON] WatchlistSymbolPost
   :> Post '[JSON] Watchlist
 
   -- Delete Symbol from Watchlist
