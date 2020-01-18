@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Calendar where
+module Record.Calendar where
 
 import Data.Aeson
 import Data.Text (Text)

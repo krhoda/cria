@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Asset where
+module Record.Asset where
 
 import Data.Aeson
 import Data.Aeson.TH (deriveJSON, defaultOptions, Options(fieldLabelModifier))

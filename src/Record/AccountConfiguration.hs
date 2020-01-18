@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module AccountConfiguration where
+module Record.AccountConfiguration where
 
 import Data.Aeson
 import Data.Text (Text)

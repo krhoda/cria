@@ -1,9 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Watchlist where
+module Record.Watchlist where
 
-import Asset
+import Record.Asset
 
 import Data.Aeson
 import Data.Aeson.TH (deriveJSON, defaultOptions, Options (fieldLabelModifier))

@@ -1,15 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Lib
+module IntegrationTest
     ( runAPITest
     ) where
 
-import Alparseable
-import Account as Acct
-import Asset as Ast
+import Record.Alparseable
+import Record.Account as Acct
+import Record.Asset as Ast
 import Cria
-import RequestBodies as Req
-import Watchlist as Wl
+import Record.RequestBodies as Req
+import Record.Watchlist as Wl
 
 import Data.Text (Text, unpack)
 

@@ -10,9 +10,9 @@ import GHC.Generics (Generic)
 
 import Servant.API
 
-import Account
-import Watchlist
-import RequestBodies
+import Record.Account
+import Record.Watchlist
+import Record.RequestBodies
 
 type AlpacaAccount =
   -- View Account by Key/Secret

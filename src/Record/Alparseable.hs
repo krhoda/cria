@@ -1,4 +1,4 @@
-module Alparseable where
+module Record.Alparseable where
 
 import Data.Text (Text, unpack)
 import Text.Read (readMaybe)

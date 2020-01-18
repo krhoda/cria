@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Clock where
+module Record.Clock where
 
 import Data.Aeson
 import Data.Text (Text)

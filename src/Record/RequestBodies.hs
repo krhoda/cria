@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module RequestBodies where
+module Record.RequestBodies where
 
 import Data.Aeson
 import Data.Text (Text, unpack)
