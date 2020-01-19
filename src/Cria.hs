@@ -5,7 +5,6 @@ module Cria where
 import Alpaca
 
 import Data.Text (Text, unpack)
-import Data.Proxy
 
 import Network.HTTP.Client (newManager, defaultManagerSettings)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
@@ -21,21 +20,10 @@ trueAlpacaBase = BaseUrl Https "api.alpaca.markets" 443 "/v2"
 
 type CriaError = ClientError
 
--- Proxy APIs exposed for custom usage. Consider not exposing?
-accountProxy :: Proxy AlpacaAccount
-accountProxy = Proxy
-
-clockProxy :: Proxy AlpacaClock
-clockProxy = Proxy
-
-calendarProxy :: Proxy AlpacaCalendar
-calendarProxy = Proxy
-
-watchlistProxy :: Proxy AlpacaWatchlist
-watchlistProxy = Proxy
-
 -- Routes for public consumption.
 accountRoutes = client accountProxy
+
+assetRoutes = client assetProxy
 
 calendarRoute = client calendarProxy
 clockRoute = client clockProxy
@@ -46,6 +34,10 @@ watchlistRoutes = client watchlistProxy
 getAccount :<|>
   getAccountConfig :<|>
   updateAccountConfig = accountRoutes
+
+getAssetList :<|>
+  getAssetByID :<|>
+  getAssetBySymbol = assetRoutes
 
 getClock = clockRoute
 getCalendar = calendarRoute

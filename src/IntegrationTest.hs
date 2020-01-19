@@ -6,6 +6,7 @@ module IntegrationTest
 
 -- import Record.Alparseable
 import APITest.AccountTest
+import APITest.AssetTest
 import APITest.CalendarTest
 import APITest.ClockTest
 import APITest.WatchlistTest
@@ -52,3 +53,7 @@ runIntegrationTest key secret = do
   -- TODO: Put this after trading test.
   step5 <- testPrefix step4 "Test Account Routes:"
   runAccountTest cli
+
+  putStrLn "Read only Asset Routes:"
+  step6 <- testPrefix step5 "Test Asset Routes:"
+  runAssetTest cli

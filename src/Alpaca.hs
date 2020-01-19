@@ -5,6 +5,7 @@ module Alpaca where
 
 import Data.Aeson
 import Data.Text (Text)
+import Data.Proxy
 
 import GHC.Generics (Generic)
 
@@ -12,6 +13,8 @@ import Servant.API
 
 import Record.Account
 import Record.AccountConfiguration
+
+import Record.Asset
 
 import Record.Clock
 import Record.Calendar
@@ -45,6 +48,38 @@ type AlpacaAccount =
   :> Header "APCA-API-SECRET-KEY" String
   :> Patch '[JSON] AccountConfiguration
 
+accountProxy :: Proxy AlpacaAccount
+accountProxy = Proxy
+
+type AlpacaAsset =
+  -- Get Assets
+  -- getAssetList
+  "assets"
+  :> QueryParam "status" String
+  :> QueryParam "asset_class" String
+  :> Header "APCA-API-KEY-ID" String
+  :> Header "APCA-API-SECRET-KEY" String
+  :> Get '[JSON] [Asset]
+
+  -- Gets an Asset by ID
+  -- getAssetByID
+  :<|> "assets"
+  :> Capture "id" String
+  :> Header "APCA-API-KEY-ID" String
+  :> Header "APCA-API-SECRET-KEY" String
+  :> Get '[JSON] Asset
+
+  -- Gets an Asset by Symbol
+  -- getAssetBySymbol
+  :<|> "assets"
+  :> Capture "symbol" String
+  :> Header "APCA-API-KEY-ID" String
+  :> Header "APCA-API-SECRET-KEY" String
+  :> Get '[JSON] Asset
+
+assetProxy :: Proxy AlpacaAsset
+assetProxy = Proxy
+
 type AlpacaCalendar =
   -- TODO: Put some guards arount inputs to start / end?
 
@@ -58,6 +93,9 @@ type AlpacaCalendar =
   :> Header "APCA-API-SECRET-KEY" String
   :> Get '[JSON] [Calendar]
 
+calendarProxy :: Proxy AlpacaCalendar
+calendarProxy = Proxy
+
 type AlpacaClock =
   -- Gets the clock.
   -- getClock
@@ -65,6 +103,9 @@ type AlpacaClock =
   :> Header "APCA-API-KEY-ID" String
   :> Header "APCA-API-SECRET-KEY" String
   :> Get '[JSON] Clock
+
+clockProxy :: Proxy AlpacaClock
+clockProxy = Proxy
 
 type AlpacaWatchlist =
   -- List watchlists.
@@ -124,3 +165,6 @@ type AlpacaWatchlist =
   :> Header "APCA-API-KEY-ID" String
   :> Header "APCA-API-SECRET-KEY" String
   :> DeleteNoContent '[JSON] NoContent
+
+watchlistProxy :: Proxy AlpacaWatchlist
+watchlistProxy = Proxy
