@@ -33,15 +33,17 @@ accountRoutes = client accountProxy
 watchlistRoutes = client watchlistProxy
 
 -- Pre-pattern-matched Requests.
-getAccount = accountRoutes
+getAccount :<|>
+  getAccountConfig :<|>
+  updateAccountConfig = accountRoutes
 
 getWatchlists :<|>
-     getWatchlist :<|>
-     createWatchlist :<|>
-     updateWatchlist :<|>
-     addSymbolWatchlist :<|>
-     deleteSymbolWatchlist :<|>
-     deleteWatchlist = watchlistRoutes
+  getWatchlist :<|>
+  createWatchlist :<|>
+  updateWatchlist :<|>
+  addSymbolWatchlist :<|>
+  deleteSymbolWatchlist :<|>
+  deleteWatchlist = watchlistRoutes
 
 -- Reduces boilerplate by applying configuration to requests as needed.
 data CriaClient = CriaClient {

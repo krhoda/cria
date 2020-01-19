@@ -19,25 +19,24 @@ testPrefix x y = do
 
 useLive = False
 
-firstStep :: Int
-firstStep = 1
+step1 :: Int
+step1 = 1
 
+-- TODO: REMOVE
 runAPITest :: String -> String -> IO ()
 runAPITest key secret = do
   runIntegrationTest key secret
-  -- cli <- return (configCria (key, secret, useLive))
-  -- accountStep <- testGetAccount cli firstStep
-  -- watchlistStep <- testWatchlistRoutes cli accountStep
-  -- print "DONE!"
 
 runIntegrationTest :: String -> String -> IO ()
 runIntegrationTest key secret = do
   cli <- return (configCria (key, secret, useLive))
   putStrLn "About to start integration tests:"
 
-  step2 <- testPrefix firstStep "Test Account Routes:"
-  runAccountTest  cli
-
-  step3 <- testPrefix step2 "Test Watchlist Routes:"
+  step2 <- testPrefix step1 "Test Watchlist Routes:"
   runWatchlistTest cli
+
   -- -- TODO: MORE WISHFUL THINKING
+
+  -- TODO: Put this after trading test.
+  step3 <- testPrefix step2 "Test Account Routes:"
+  runAccountTest cli
