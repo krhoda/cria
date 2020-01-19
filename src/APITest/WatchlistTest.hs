@@ -22,25 +22,26 @@ runWatchlistTest cli = do
   putStrLn "Checking Existing Watchlists\n"
   testGetWatchlists cli
   putStrLn "Making New Watchlist\n"
+
   eitherWL <- makeTestWatchlist cli
   maybeWL <- checkTestWatchlist eitherWL
   case maybeWL of
-    Nothing -> putStrLn "checkTestWatchlist Failed."
+    Nothing -> putStrLn "checkTestWatchlist Failed.\n"
 
     Just wl -> do
       success <- checkToggleRoutes cli wl
 
       if not success
-        then putStrLn "checkToggleRoutes Failed."
+        then putStrLn "checkToggleRoutes Failed.\n"
 
         else do
-          delRes <- runReq cli $ (signReq cli deleteWatchlist) (unpack (watchlist_id wl))
+          delRes <- runReq cli $ signReq cli deleteWatchlist $ unpack $ watchlist_id wl
 
           case delRes of
             Left err -> printWLError $ "deleteWatchList Failed: " ++ show err
 
-            Right (_) -> do
-              putStrLn "Checking for deleted watchlists."
+            Right _ -> do
+              putStrLn "Checking for deleted watchlists.\n"
               wRes <- signAndRun cli getWatchlists
 
               case wRes of
@@ -54,12 +55,10 @@ runWatchlistTest cli = do
 
 checkForWLID :: [Watchlist] -> String -> Bool
 checkForWLID [] _ = False
-checkForWLID (x : xs) y = if unpack (watchlist_id x) == y
-                            then True
-                            else checkForWLID xs y
+checkForWLID (x : xs) y = (unpack (watchlist_id x) == y) || checkForWLID xs y
 
 makeTestWatchlist :: CriaClient -> IO (Either CriaError Watchlist)
-makeTestWatchlist cli = runReq cli $ (signReq cli createWatchlist) testWL
+makeTestWatchlist cli = runReq cli $ signReq cli createWatchlist testWL
 
 checkTestWatchlist :: Either CriaError Watchlist -> IO (Maybe Watchlist)
 checkTestWatchlist (Left err) = do
@@ -67,18 +66,18 @@ checkTestWatchlist (Left err) = do
         return Nothing
 
 checkTestWatchlist (Right wl) = do
-  print "!!!"
   print wl
-  print "!!!"
-  putStrLn "Verify it does not have Google..."
+  putStrLn "Verify it does not have Google...\n"
+
   shouldBeFalse <- return $ checkForSym (assets wl) "GOOG"
+
   if shouldBeFalse
     then do
-      printWLError "Found google in test watchlist. Should only find FLWS."
+      printWLError "Found google in test watchlist. Should only find FLWS.\n"
       return Nothing
 
     else do
-      putStrLn "Verify it has flowers..."
+      putStrLn "Verify it has flowers...\n"
       shouldBeTrue <- return $ checkForSym (assets wl) "FLWS"
 
       if not shouldBeTrue
@@ -88,53 +87,63 @@ checkTestWatchlist (Right wl) = do
 
         else return (Just wl)
 
-checkToggleRoutes :: CriaClient -> Watchlist -> IO (Bool)
+printAndCompare :: Maybe [Asset] -> Text -> IO ()
+printAndCompare (Nothing) _ = putStrLn "Nothing."
+printAndCompare (Just []) _ = putStrLn "End of list."
+printAndCompare (Just (x : xs)) y = do
+  print (Ast.symbol x)
+  print (Ast.symbol x == y)
+  printAndCompare (Just xs) y
+
+checkToggleRoutes :: CriaClient -> Watchlist -> IO Bool
 checkToggleRoutes cli wl = do
-  addRes <- toggleWatchSym cli (unpack (watchlist_id wl)) "GOOG" True
+  addRes <- toggleWatchSym cli (unpack $ watchlist_id wl) "GOOG" False
   case addRes of
     Left err -> do
       printWLError $ show err
       return False
 
     Right wl2 -> do
-      putStrLn "Toggled google!"
-      shouldBeTrue <- return $ checkForSym (assets wl) "GOOG"
+      putStrLn "Toggled google!\n"
+      print $ assets wl2
+      printAndCompare (assets wl2) "GOOG"
 
-      if shouldBeTrue
+      shouldBeTrue <- return $ checkForSym (assets wl2) "GOOG"
+      if not shouldBeTrue
         then do
           printWLError ("Did not find added symbol, GOOG, in test watchlist: " ++ show (assets wl) ++ " ")
           return shouldBeTrue
 
         else do
-          putStrLn "Google Found! Now removing..."
-          delRes <- toggleWatchSym cli (unpack (watchlist_id wl2)) "GOOG" False
+          putStrLn "Google Found! Now removing...\n"
+          delRes <- toggleWatchSym cli (unpack (watchlist_id wl2)) "GOOG" True
+
           case delRes of
             Left err -> do
               printWLError $ show err
               return False
+
             Right wl3 -> do
-                shouldBeFalse <- return $ checkForSym (assets wl3) "GOOG"
-                if not shouldBeFalse
-                  then do
-                    printWLError ("Still found 'deleted' symbol, GOOG, in test watchlist: " ++ show (assets wl) ++ " ")
-                    return False
-                  else do
-                    putStrLn "Successfully deleted Google."
-                    return True
+              putStrLn "Removed, Checking...\n"
+              print wl3
 
+              shouldBeFalse <- return $ checkForSym (assets wl3) "GOOG"
+              if shouldBeFalse
+                then do
+                  printWLError ("Still found 'deleted' symbol, GOOG, in test watchlist: " ++ show (assets wl) ++ " ")
+                  return False
 
-googleReq :: WatchlistSymbolPost
-googleReq = WatchlistSymbolPost "GOOG"
+                else do
+                  putStrLn "Successfully deleted Google.\n"
+                  return True
 
 testWL :: WatchlistPost
 testWL = WatchlistPost "flowers" ["FLWS"]
 
-checkForSym :: Maybe [Asset] -> String -> Bool
+checkForSym :: Maybe [Asset] -> Text -> Bool
 checkForSym Nothing _ = False
 checkForSym (Just []) _ = False
-checkForSym (Just (x : xs)) y = if Ast.symbol x == (pack y)
-  then True
-  else checkForSym (Just xs) y
+checkForSym (Just (x : xs)) y = (Ast.symbol x == y) || checkForSym (Just xs) y
 
 
 toggleWatchSym
