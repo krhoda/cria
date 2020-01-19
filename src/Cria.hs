@@ -40,7 +40,8 @@ getWatchlists :<|>
      createWatchlist :<|>
      updateWatchlist :<|>
      addSymbolWatchlist :<|>
-     deleteSymbolWatchlist = watchlistRoutes
+     deleteSymbolWatchlist :<|>
+     deleteWatchlist = watchlistRoutes
 
 -- Reduces boilerplate by applying configuration to requests as needed.
 data CriaClient = CriaClient {

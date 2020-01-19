@@ -12,7 +12,8 @@ import Servant.API
 
 import Record.Account
 import Record.Watchlist
-import Record.RequestBodies
+import Record.Req.WatchlistPost
+import Record.Req.WatchlistSymbolPost
 
 type AlpacaAccount =
   -- View Account by Key/Secret
@@ -39,8 +40,8 @@ type AlpacaWatchlist =
   :<|> "watchlists"
   :> Header "APCA-API-KEY-ID" String
   :> Header "APCA-API-SECRET-KEY" String
-  :> ReqBody '[JSON] [WatchlistPost]
-  :> Post '[JSON] [Watchlist]
+  :> ReqBody '[JSON] WatchlistPost
+  :> Post '[JSON] Watchlist
 
   -- Update a particular watchlist
   :<|> "watchlists"
@@ -67,8 +68,8 @@ type AlpacaWatchlist =
   :> Delete '[JSON] Watchlist
 
   -- Delete Watchlist. TODO: WHAT DOES IT RETURN?
-  -- :<|> "watchlists"
-  -- :> Header "APCA-API-KEY-ID" String
-  -- :> Header "APCA-API-SECRET-KEY" String
-  -- :> Capture "id" String
-  -- :> Delete '[JSON] Watchlist
+  :<|> "watchlists"
+  :> Header "APCA-API-KEY-ID" String
+  :> Header "APCA-API-SECRET-KEY" String
+  :> Capture "id" String
+  :> DeleteNoContent '[JSON] NoContent
