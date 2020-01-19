@@ -8,9 +8,9 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 
 data Calendar = Calendar {
-    close :: Text,
-    date :: Text,
-    open :: Text
+    close :: Text, -- %Y-%m-%d
+    date :: Text, -- HH:MM
+    open :: Text-- HH:MM
   } deriving (Show, Eq, Generic)
 
 instance FromJSON Calendar

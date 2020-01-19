@@ -23,6 +23,9 @@ runAccountTest cli = do
       configRes <- signAndRun cli getAccountConfig
       testConfig cli configRes
 
+      -- TODO: ADD ACCOUNT ACTIVITIES ONCE I HAVE TESTED THEM.
+      -- THESE TWO ROUTES: https://docs.alpaca.markets/api-documentation/api-v2/account-activities/
+
 
 testConfig :: CriaClient ->  Either CriaError AccountConfiguration -> IO ()
 testConfig _ (Left err) = putStrLn $ "Failed to get config: " ++ show err
@@ -40,7 +43,9 @@ roundTripConfigBools cli ac = do
                  (trade_confirm_email (swapConfigEmail ac))
 
   putStrLn $ "About to flip\n" ++ show ac ++ "\nto\n" ++ show nextAC ++ "\n"
-  flipped <- runReq cli $ (signReq cli updateAccountConfig) nextAC
+  -- flipped <- runReq cli $ (signReq cli updateAccountConfig) nextAC
+  flipped <- signAndRun cli $ updateAccountConfig nextAC
+  -- flipped <- signAndRun cli
   case flipped of
     Left err -> putStrLn $ "Failed in flip request " ++ show err
 
@@ -51,7 +56,7 @@ roundTripConfigBools cli ac = do
 
         then do
           putStrLn "Finished flipped, about to unflip"
-          unflipped <- runReq cli $ (signReq cli updateAccountConfig) ac
+          unflipped <- signAndRun cli $ updateAccountConfig ac
 
           case unflipped of
             Left err -> putStrLn $ "Failed in unflipped" ++ show err
@@ -62,7 +67,7 @@ roundTripConfigBools cli ac = do
 roundTripConfigDTBP :: CriaClient -> AccountConfiguration -> IO ()
 roundTripConfigDTBP cli ac = do
   let nextACReq = swapConfigDTBP ac
-  nextACRes <- runReq cli $ (signReq cli updateAccountConfig) nextACReq
+  nextACRes <- signAndRun cli $ updateAccountConfig nextACReq
   case nextACRes of
     Left err -> do
       putStrLn $ "Failed in first shift: " ++ show err
@@ -72,7 +77,7 @@ roundTripConfigDTBP cli ac = do
           putStrLn $ "Failed in equality in first shift: \n" ++ show nextACRes ++ "\n"
         else do
           lastACReq <- return (swapConfigDTBP nextAC)
-          lastACRes <- runReq cli $ (signReq cli updateAccountConfig) lastACReq
+          lastACRes <- signAndRun cli $ updateAccountConfig lastACReq
 
           case lastACRes of
             Left err -> do
@@ -83,7 +88,7 @@ roundTripConfigDTBP cli ac = do
                   putStrLn $ "Failed in equality in second shift: \n" ++ show lastACRes ++ "\n"
                  else do
 
-                  origACRes <- runReq cli $ (signReq cli updateAccountConfig) ac
+                  origACRes <- signAndRun cli $ updateAccountConfig ac
                   case origACRes of
                     Left err -> do
                       putStrLn $ "Failed in last shift: " ++ show err

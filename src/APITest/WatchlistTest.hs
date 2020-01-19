@@ -35,7 +35,7 @@ runWatchlistTest cli = do
         then putStrLn "checkToggleRoutes Failed.\n"
 
         else do
-          delRes <- runReq cli $ signReq cli deleteWatchlist $ unpack $ watchlist_id wl
+          delRes <- signAndRun cli $ deleteWatchlist $ unpack $ watchlist_id wl
 
           case delRes of
             Left err -> printWLError $ "deleteWatchList Failed: " ++ show err
@@ -58,7 +58,7 @@ checkForWLID [] _ = False
 checkForWLID (x : xs) y = (unpack (watchlist_id x) == y) || checkForWLID xs y
 
 makeTestWatchlist :: CriaClient -> IO (Either CriaError Watchlist)
-makeTestWatchlist cli = runReq cli $ signReq cli createWatchlist testWL
+makeTestWatchlist cli = signAndRun cli $ createWatchlist testWL
 
 checkTestWatchlist :: Either CriaError Watchlist -> IO (Maybe Watchlist)
 checkTestWatchlist (Left err) = do
@@ -145,7 +145,6 @@ checkForSym Nothing _ = False
 checkForSym (Just []) _ = False
 checkForSym (Just (x : xs)) y = (Ast.symbol x == y) || checkForSym (Just xs) y
 
-
 toggleWatchSym
         :: CriaClient
         -> String
@@ -154,11 +153,11 @@ toggleWatchSym
         -> IO (Either CriaError Watchlist)
 
 toggleWatchSym cli wlID sym True = do
-  res <- runReq cli $ signReq cli deleteSymbolWatchlist wlID sym
+  res <- signAndRun cli $ deleteSymbolWatchlist wlID sym
   return res
 
 toggleWatchSym cli wlID sym False = do
-  res <- runReq cli $ signReq cli addSymbolWatchlist wlID (WatchlistSymbolPost (pack sym))
+  res <- signAndRun cli $ addSymbolWatchlist wlID (WatchlistSymbolPost (pack sym))
   return res
 
 testGetWatchlists :: CriaClient -> IO ()

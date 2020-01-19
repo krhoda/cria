@@ -6,6 +6,8 @@ module IntegrationTest
 
 -- import Record.Alparseable
 import APITest.AccountTest
+import APITest.CalendarTest
+import APITest.ClockTest
 import APITest.WatchlistTest
 
 import Cria
@@ -31,12 +33,22 @@ runIntegrationTest :: String -> String -> IO ()
 runIntegrationTest key secret = do
   cli <- return (configCria (key, secret, useLive))
   putStrLn "About to start integration tests:"
+  putStrLn "Let's start simple, Clock then Calendar..."
 
-  step2 <- testPrefix step1 "Test Watchlist Routes:"
+  step2 <- testPrefix step1 "Test Clock Route Route:"
+  runClockTest cli
+
+  step3 <- testPrefix step2 "Test Calendar Route Route:"
+  runCalendarTest cli
+
+  putStrLn "Now let's look at read-only... Watchlists:"
+
+  step4 <- testPrefix step3 "Test Watchlist Routes:"
   runWatchlistTest cli
 
   -- -- TODO: MORE WISHFUL THINKING
+  putStrLn "Read only Account Routes:"
 
   -- TODO: Put this after trading test.
-  step3 <- testPrefix step2 "Test Account Routes:"
+  step5 <- testPrefix step4 "Test Account Routes:"
   runAccountTest cli

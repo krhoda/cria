@@ -25,17 +25,30 @@ type CriaError = ClientError
 accountProxy :: Proxy AlpacaAccount
 accountProxy = Proxy
 
+clockProxy :: Proxy AlpacaClock
+clockProxy = Proxy
+
+calendarProxy :: Proxy AlpacaCalendar
+calendarProxy = Proxy
+
 watchlistProxy :: Proxy AlpacaWatchlist
 watchlistProxy = Proxy
 
 -- Routes for public consumption.
 accountRoutes = client accountProxy
+
+calendarRoute = client calendarProxy
+clockRoute = client clockProxy
+
 watchlistRoutes = client watchlistProxy
 
 -- Pre-pattern-matched Requests.
 getAccount :<|>
   getAccountConfig :<|>
   updateAccountConfig = accountRoutes
+
+getClock = clockRoute
+getCalendar = calendarRoute
 
 getWatchlists :<|>
   getWatchlist :<|>
@@ -61,7 +74,7 @@ configCria (key, secret, live) = CriaClient {
                                     }
 
 -- Apply credentials to request -- always required.
-signReq :: CriaClient -> (Maybe String -> Maybe String -> a) -> a
+signReq :: CriaClient -> (Maybe String -> Maybe String -> ClientM a) ->  ClientM a
 signReq x y = y (Just (key x)) (Just (secret x))
 
 -- Run satisfied request.
@@ -72,8 +85,8 @@ runReq cli req = do
   return res
 
 -- Sign and Run is a helper for requests without any other params.
-signAndRun :: CriaClient -> (Maybe String -> Maybe String -> ClientM a) -> IO (Either ClientError a)
-signAndRun x y = runReq x (signReq x y)
+signAndRun :: CriaClient -> (Maybe String -> Maybe String -> ClientM b) -> IO (Either ClientError b)
+signAndRun x y = runReq x $ signReq x y
 
 -- Used to run requests with correct base.
 criaEnv :: Bool -> IO ClientEnv
