@@ -21,6 +21,7 @@ testPrefix x y = do
   return (x + 1)
 
 useLive = False
+verbose = False
 
 step1 :: Int
 step1 = 1
@@ -56,4 +57,4 @@ runIntegrationTest key secret = do
 
   putStrLn "Read only Asset Routes:"
   step6 <- testPrefix step5 "Test Asset Routes:"
-  runAssetTest cli
+  runAssetTest cli verbose

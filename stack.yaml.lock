@@ -12,6 +12,13 @@ packages:
   original:
     hackage: text-1.2.3.1
 - completed:
+    hackage: containers-0.6.0.1@sha256:50024f330653c702a339f7743522b3c2a4fff9c6bf5a7071affe270da2ee649a,15843
+    pantry-tree:
+      size: 4933
+      sha256: 9a33a9d98310bf01b0ee2dd041dfdaaabfcbc07547a4c60443678a22cb114299
+  original:
+    hackage: containers-0.6.0.1
+- completed:
     hackage: servant-0.16.2@sha256:6c5d19d09a9dd2f2b2bf99193f944491f8374802678b79ec729e3f3ae51e216d,5867
     pantry-tree:
       size: 2604

@@ -16,6 +16,8 @@ import Record.AccountConfiguration
 
 import Record.Asset
 
+import Record.Bar
+
 import Record.Clock
 import Record.Calendar
 
@@ -79,6 +81,23 @@ type AlpacaAsset =
 
 assetProxy :: Proxy AlpacaAsset
 assetProxy = Proxy
+
+type AlpacaBar =
+  "bars"
+  :> Capture "timeframe" String
+  -- TODO: Make a better wrapper to all of this.
+  :> QueryParam "symbols" String -- Comma Sepearated, under 200
+  :> QueryParam  "limit" Integer -- 1 -- 1k
+  :> QueryParam  "start" String -- ISO Format Timestamp. Cannot be used with after.
+  :> QueryParam  "end" String -- ISO Format Timestamp. Cannot be used with until.
+  :> QueryParam  "after" String -- ISO Format Timestamp. Cannot be used with stert
+  :> QueryParam  "until" String -- ISO Format Timestamp Cannot be used with end.
+  :> Header "APCA-API-KEY-ID" String
+  :> Header "APCA-API-SECRET-KEY" String
+  :> Get '[JSON] Bar
+
+barProxy :: Proxy AlpacaBar
+barProxy = Proxy
 
 type AlpacaCalendar =
   -- TODO: Put some guards arount inputs to start / end?

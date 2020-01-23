@@ -3,6 +3,8 @@
 module Cria where
 
 import Alpaca
+import Record.Req.BarQuery (BarQuery, barQueryToReq)
+import Record.Bar
 
 import Data.Text (Text, unpack)
 
@@ -25,6 +27,8 @@ accountRoutes = client accountProxy
 
 assetRoutes = client assetProxy
 
+barRoutes = client barProxy
+
 calendarRoute = client calendarProxy
 clockRoute = client clockProxy
 
@@ -38,6 +42,14 @@ getAccount :<|>
 getAssetList :<|>
   getAssetByID :<|>
   getAssetBySymbol = assetRoutes
+
+getBar = barRoutes
+
+safeGetBar :: BarQuery -> Either String (Maybe String -> Maybe String -> ClientM Bar)
+safeGetBar bq = case (barQueryToReq bq) of
+  Left x -> Left x
+  Right (tf, syms, limQuery, start, end, after, until) -> Right (getBar tf syms limQuery start end after until)
+
 
 getClock = clockRoute
 getCalendar = calendarRoute

@@ -10,8 +10,8 @@ import Record.Asset
 
 import Data.Text (unpack)
 
-runAssetTest :: CriaClient -> IO ()
-runAssetTest cli = do
+runAssetTest :: CriaClient -> Bool -> IO ()
+runAssetTest cli verbose = do
   putStrLn "About to test getAssetBySymbol"
   res1 <- signAndRun cli $ getAssetBySymbol "FLWS"
   case res1 of
@@ -29,6 +29,9 @@ runAssetTest cli = do
             then putStrLn "Asset 1 and Asset 2 do not match..."
             else do
               putStrLn "Now for the big one..."
-              res <- signAndRun cli $ getAssetList (Just "active") (Just "us_equity")
-              -- TODO: FINISH THIS:
-              print res
+              if verbose
+                then do
+                  res <- signAndRun cli $ getAssetList (Just "active") (Just "us_equity")
+                  -- TODO: FINISH THIS:
+                  print res
+                else putStrLn "Verbose is off... skipping get all assets."
